@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -32,18 +33,87 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppV1Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MainScreen(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MyApp()
             }
         }
     }
 }
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MyApp() {
+    var showMainScreen by remember { mutableStateOf(false) }
+
+    if (showMainScreen) {
+        MainScreen(onBackClick = { showMainScreen = false })
+    } else {
+        InitialScreen(onNavigateToMain = { showMainScreen = true })
+    }
+}
+
+@Composable
+fun InitialScreen(onNavigateToMain: () -> Unit) {
+    val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Welcome to\nKeep Walking",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1B5E20), // Nuevo tono de verde
+                modifier = Modifier.padding(bottom = 32.dp),
+                textAlign = TextAlign.Center
+            )
+
+            Image(
+                painter = painterResource(id = R.drawable.imagenprincipalapp),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(bottom = 32.dp)
+            )
+
+            ButtonContainer(text = "Conectar Bluetooth", color = buttonColor) {
+                // Acción para conectar Bluetooth
+                // Aquí puedes agregar la lógica de conexión Bluetooth
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+        ) {
+            Button(
+                onClick = onNavigateToMain,
+                colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+                modifier = Modifier.size(100.dp, 50.dp) // Tamaño reducido para el botón "Saltar"
+            ) {
+                Text(
+                    text = "Saltar",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
     val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
     val backgroundColor = Color(0xFFFFFFFF) // Color de fondo blanco
 
@@ -55,8 +125,21 @@ fun MainScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier.align(Alignment.Start)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Retroceder",
+                tint = buttonColor
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Text(
-            text = "Estimulador Muscular",
+            text = "Controlador de Estimulador Muscular",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF1B5E20),
@@ -65,7 +148,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
         )
 
         Image(
-            painter = painterResource(id = R.drawable.imagenprincipalapp),
+            painter = painterResource(id = R.drawable.personasaludable),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,7 +177,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ButtonContainer(text: String, color: Color, icon: ImageVector, onClick: () -> Unit) {
+fun ButtonContainer(text: String, color: Color, icon: ImageVector? = null, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .padding(8.dp)
@@ -108,12 +191,14 @@ fun ButtonContainer(text: String, color: Color, icon: ImageVector, onClick: () -
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.padding(end = 8.dp)
-            )
+            icon?.let {
+                Icon(
+                    imageVector = it,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+            }
             Text(
                 text = text,
                 fontSize = 18.sp,
@@ -127,8 +212,16 @@ fun ButtonContainer(text: String, color: Color, icon: ImageVector, onClick: () -
 
 @Preview(showBackground = true)
 @Composable
+fun InitialScreenPreview() {
+    AppV1Theme {
+        InitialScreen(onNavigateToMain = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
 fun MainScreenPreview() {
     AppV1Theme {
-        MainScreen()
+        MainScreen(onBackClick = {})
     }
 }
