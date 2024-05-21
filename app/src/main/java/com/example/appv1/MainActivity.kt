@@ -9,11 +9,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -69,22 +73,28 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 .padding(bottom = 32.dp)
         )
 
-        ButtonContainer(text = "Encendido", color = buttonColor) {
-            // Acción para Encendido
-        }
+        // Button states
+        var isOn by remember { mutableStateOf(false) }
+        var mode by remember { mutableStateOf("Normal") }
 
-        ButtonContainer(text = "Apagado", color = buttonColor) {
-            // Acción para Apagado
-        }
+        ButtonContainer(
+            text = if (isOn) "Apagar" else "Encender",
+            color = buttonColor,
+            icon = Icons.Default.PowerSettingsNew,
+            onClick = { isOn = !isOn }
+        )
 
-        ButtonContainer(text = "Modo", color = buttonColor) {
-            // Acción para Modo
-        }
+        ButtonContainer(
+            text = "Modo: $mode",
+            color = buttonColor,
+            icon = Icons.Default.Settings,
+            onClick = { mode = if (mode == "Normal") "Intenso" else "Normal" }
+        )
     }
 }
 
 @Composable
-fun ButtonContainer(text: String, color: Color, onClick: () -> Unit) {
+fun ButtonContainer(text: String, color: Color, icon: ImageVector, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .padding(8.dp)
@@ -94,13 +104,24 @@ fun ButtonContainer(text: String, color: Color, onClick: () -> Unit) {
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            textAlign = TextAlign.Center
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = text,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
