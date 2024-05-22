@@ -3,7 +3,6 @@ package com.example.appv1
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,7 +29,6 @@ import com.example.appv1.ui.theme.AppV1Theme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             AppV1Theme {
                 MyApp()
@@ -78,16 +76,15 @@ fun InitialScreen(onNavigateToMain: () -> Unit) {
 
             Image(
                 painter = painterResource(id = R.drawable.imagenprincipalapp),
-                contentDescription = null,
+                contentDescription = "Imagen principal de la aplicación",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(200.dp) // Reducir el tamaño de la imagen
                     .padding(bottom = 32.dp)
             )
 
             ButtonContainer(text = "Conectar Bluetooth", color = buttonColor) {
-                // Acción para conectar Bluetooth
-                // Aquí puedes agregar la lógica de conexión Bluetooth
+                // TODO: Agregar la lógica de conexión Bluetooth
             }
         }
 
@@ -117,23 +114,29 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
     val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
     val backgroundColor = Color(0xFFFFFFFF) // Color de fondo blanco
 
+    var mode by remember { mutableStateOf(1) } // Estado para el modo actual
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(backgroundColor)
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Top
     ) {
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier.align(Alignment.Start)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
         ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Retroceder",
-                tint = buttonColor
-            )
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Retroceder",
+                    tint = buttonColor
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -149,30 +152,45 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
 
         Image(
             painter = painterResource(id = R.drawable.personasaludable),
-            contentDescription = null,
+            contentDescription = "Imagen de persona saludable",
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
-                .padding(bottom = 32.dp)
+                .height(200.dp) // Reducir la altura de la imagen
+                .padding(bottom = 16.dp)
         )
 
         // Button states
         var isOn by remember { mutableStateOf(false) }
-        var mode by remember { mutableStateOf("Normal") }
 
         ButtonContainer(
-            text = if (isOn) "Apagar" else "Encender",
+            text = "Encender",
             color = buttonColor,
             icon = Icons.Default.PowerSettingsNew,
-            onClick = { isOn = !isOn }
+            onClick = { isOn = true }
         )
 
         ButtonContainer(
-            text = "Modo: $mode",
+            text = "Apagar",
             color = buttonColor,
-            icon = Icons.Default.Settings,
-            onClick = { mode = if (mode == "Normal") "Intenso" else "Normal" }
+            icon = Icons.Default.PowerSettingsNew,
+            onClick = { isOn = false }
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            ButtonContainer(
+                text = "Modo $mode",
+                color = buttonColor,
+                icon = Icons.Default.Settings,
+                onClick = {
+                    mode = (mode % 8) + 1 // Cambiar al siguiente modo, volviendo a 1 después de 8
+                }
+            )
+        }
     }
 }
 
