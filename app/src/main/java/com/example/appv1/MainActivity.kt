@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,6 +24,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appv1.ui.theme.AppV1Theme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,16 +41,33 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp() {
     var showMainScreen by remember { mutableStateOf(false) }
+    var showStimulusScreen by remember { mutableStateOf(false) }
+    var showLogScreen by remember { mutableStateOf(false) }
 
-    if (showMainScreen) {
-        MainScreen(onBackClick = { showMainScreen = false })
-    } else {
-        InitialScreen(onNavigateToMain = { showMainScreen = true })
+    when {
+        showLogScreen -> {
+            LogScreen(onBackClick = { showLogScreen = false })
+        }
+        showStimulusScreen -> {
+            StimulusScreen(onBackClick = { showStimulusScreen = false })
+        }
+        showMainScreen -> {
+            MainScreen(
+                onBackClick = { showMainScreen = false },
+                onNavigateToStimulus = { showStimulusScreen = true }
+            )
+        }
+        else -> {
+            InitialScreen(
+                onNavigateToMain = { showMainScreen = true },
+                onNavigateToLog = { showLogScreen = true }
+            )
+        }
     }
 }
 
 @Composable
-fun InitialScreen(onNavigateToMain: () -> Unit) {
+fun InitialScreen(onNavigateToMain: () -> Unit, onNavigateToLog: () -> Unit) {
     val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
 
     Box(
@@ -62,10 +80,31 @@ fun InitialScreen(onNavigateToMain: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(50.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+
+                Button(
+                    onClick = onNavigateToMain,
+                    colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Text(
+                        text = "Skip",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = "Welcome to\nKeep Walking",
@@ -77,34 +116,33 @@ fun InitialScreen(onNavigateToMain: () -> Unit) {
             )
 
             Image(
-                painter = painterResource(id = R.drawable.imagenprincipalapp),
-                contentDescription = "Imagen principal de la aplicación",
+                painter = painterResource(id = R.drawable.personacaminando),
+                contentDescription = "Imagen de persona caminando",
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp) // Reducir el tamaño de la imagen
                     .padding(bottom = 32.dp)
             )
 
-            ButtonContainer(text = "Conectar Bluetooth", color = buttonColor) {
-                // TODO: Agregar la lógica de conexión Bluetooth
+            Box(
+                modifier = Modifier
+                    .width(200.dp) // Ajustar el ancho del contenedor
+            ) {
+                ButtonContainer(text = "Conectar\nBluetooth", color = buttonColor) {
+                    // TODO: Agregar la lógica de conexión Bluetooth
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-        }
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-        ) {
             Button(
-                onClick = onNavigateToMain,
+                onClick = onNavigateToLog,
                 colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
-                modifier = Modifier.size(80.dp, 40.dp) // Tamaño reducido para el botón "Saltar"
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Saltar",
-                    fontSize = 14.sp,
+                    text = "Registro de Tiempo de Estímulos",
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
@@ -114,7 +152,7 @@ fun InitialScreen(onNavigateToMain: () -> Unit) {
 }
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
+fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigateToStimulus: () -> Unit) {
     val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
     val backgroundColor = Color(0xFFFFFFFF) // Color de fondo blanco
 
@@ -157,7 +195,7 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
         )
 
         Image(
-            painter = painterResource(id = R.drawable.personasaludable),
+            painter = painterResource(id = R.drawable.saludable),
             contentDescription = "Imagen de persona saludable",
             modifier = Modifier
                 .fillMaxWidth()
@@ -187,11 +225,124 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
 
         ButtonContainer(
-            text = "Agregar tiempo de estímulo",
+            text = "Agregar Tiempo de Estimulo",
             color = buttonColor,
             icon = Icons.Default.Settings,
+            onClick = onNavigateToStimulus
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            ButtonContainer(
+                text = "Modo $mode",
+                color = buttonColor,
+                icon = Icons.Default.Settings,
+                onClick = {
+                    mode = (mode % 8) + 1 // Cambiar al siguiente modo, volviendo a 1 después de 8
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun StimulusScreen(onBackClick: () -> Unit) {
+    val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
+    var isRunning by remember { mutableStateOf(false) }
+    var elapsedTime by remember { mutableStateOf(0L) }
+    var mode by remember { mutableStateOf(1) } // Estado para el modo actual
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(isRunning) {
+        while (isRunning) {
+            delay(10L)
+            elapsedTime += 10
+        }
+    }
+
+    val minutes = (elapsedTime / 60000) % 60
+    val seconds = (elapsedTime / 1000) % 60
+    val milliseconds = (elapsedTime / 10) % 100
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Retroceder",
+                    tint = buttonColor
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Tiempo de Estimulo",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1B5E20),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            textAlign = TextAlign.Center
+        )
+
+        Image(
+            painter = painterResource(id = R.drawable.cronometro),
+            contentDescription = "Imagen de cronómetro",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp) // Reducir la altura de la imagen
+                .padding(bottom = 16.dp)
+        )
+
+        Box(
+            modifier = Modifier
+                .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp))
+                .padding(16.dp)
+        ) {
+            Text(
+                text = String.format("%02d:%02d.%02d", minutes, seconds, milliseconds),
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ButtonContainer(
+            text = if (isRunning) "Pausar" else "Iniciar",
+            color = buttonColor,
+            onClick = { isRunning = !isRunning }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ButtonContainer(
+            text = "Reiniciar",
+            color = buttonColor,
             onClick = {
-                // TODO: Agregar lógica para agregar tiempo de estímulo
+                isRunning = false
+                elapsedTime = 0L
             }
         )
 
@@ -214,15 +365,65 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
 }
 
 @Composable
-fun ButtonContainer(text: String, color: Color, icon: ImageVector? = null, onClick: () -> Unit) {
-    Box(
+fun LogScreen(onBackClick: () -> Unit) {
+    val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
+
+    Column(
         modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth()
-            .background(color = color, shape = RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick) // Hacer todo el Box clickeable
+            .fillMaxSize()
+            .background(Color.White)
             .padding(16.dp),
-        contentAlignment = Alignment.Center
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Retroceder",
+                    tint = buttonColor
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Registro de Tiempo de Estímulos",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1B5E20),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            textAlign = TextAlign.Center
+        )
+
+        Image(
+            painter = painterResource(id = R.drawable.cronometro),
+            contentDescription = "Imagen de registro",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp) // Reducir la altura de la imagen
+                .padding(bottom = 16.dp)
+        )
+
+        // Aquí podrías agregar una lista de registros si tuvieras una
+    }
+}
+
+@Composable
+fun ButtonContainer(text: String, color: Color, icon: ImageVector? = null, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(containerColor = color),
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -238,7 +439,7 @@ fun ButtonContainer(text: String, color: Color, icon: ImageVector? = null, onCli
             }
             Text(
                 text = text,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 textAlign = TextAlign.Center
@@ -251,7 +452,7 @@ fun ButtonContainer(text: String, color: Color, icon: ImageVector? = null, onCli
 @Composable
 fun InitialScreenPreview() {
     AppV1Theme {
-        InitialScreen(onNavigateToMain = {})
+        InitialScreen(onNavigateToMain = {}, onNavigateToLog = {})
     }
 }
 
@@ -259,6 +460,22 @@ fun InitialScreenPreview() {
 @Composable
 fun MainScreenPreview() {
     AppV1Theme {
-        MainScreen(onBackClick = {})
+        MainScreen(onBackClick = {}, onNavigateToStimulus = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun StimulusScreenPreview() {
+    AppV1Theme {
+        StimulusScreen(onBackClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LogScreenPreview() {
+    AppV1Theme {
+        LogScreen(onBackClick = {})
     }
 }
