@@ -65,6 +65,8 @@ fun InitialScreen(onNavigateToMain: () -> Unit) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(50.dp))
+
             Text(
                 text = "Welcome to\nKeep Walking",
                 fontSize = 28.sp,
@@ -86,6 +88,8 @@ fun InitialScreen(onNavigateToMain: () -> Unit) {
             ButtonContainer(text = "Conectar Bluetooth", color = buttonColor) {
                 // TODO: Agregar la lógica de conexión Bluetooth
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         Box(
@@ -96,11 +100,11 @@ fun InitialScreen(onNavigateToMain: () -> Unit) {
             Button(
                 onClick = onNavigateToMain,
                 colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
-                modifier = Modifier.size(100.dp, 50.dp) // Tamaño reducido para el botón "Saltar"
+                modifier = Modifier.size(80.dp, 40.dp) // Tamaño reducido para el botón "Saltar"
             ) {
                 Text(
                     text = "Saltar",
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
@@ -146,7 +150,9 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF1B5E20),
-            modifier = Modifier.padding(bottom = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
             textAlign = TextAlign.Center
         )
 
@@ -169,11 +175,24 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit) {
             onClick = { isOn = true }
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         ButtonContainer(
             text = "Apagar",
             color = buttonColor,
             icon = Icons.Default.PowerSettingsNew,
             onClick = { isOn = false }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ButtonContainer(
+            text = "Agregar tiempo de estímulo",
+            color = buttonColor,
+            icon = Icons.Default.Settings,
+            onClick = {
+                // TODO: Agregar lógica para agregar tiempo de estímulo
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
