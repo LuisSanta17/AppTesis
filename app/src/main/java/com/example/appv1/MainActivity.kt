@@ -8,9 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.PowerSettingsNew
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,35 +43,30 @@ fun MyApp() {
     var showLogScreen by remember { mutableStateOf(false) }
 
     when {
-        showLogScreen -> {
-            LogScreen(onBackClick = { showLogScreen = false })
-        }
-        showStimulusScreen -> {
-            StimulusScreen(onBackClick = { showStimulusScreen = false })
-        }
-        showMainScreen -> {
-            MainScreen(
-                onBackClick = { showMainScreen = false },
-                onNavigateToStimulus = { showStimulusScreen = true }
-            )
-        }
-        else -> {
-            InitialScreen(
-                onNavigateToMain = { showMainScreen = true },
-                onNavigateToLog = { showLogScreen = true }
-            )
-        }
+        showLogScreen -> LogScreen(onBackClick = { showLogScreen = false })
+        showStimulusScreen -> StimulusScreen(onBackClick = { showStimulusScreen = false })
+        showMainScreen -> MainScreen(
+            onBackClick = { showMainScreen = false },
+            onNavigateToStimulus = { showStimulusScreen = true }
+        )
+        else -> InitialScreen(
+            onNavigateToMain = { showMainScreen = true },
+            onNavigateToLog = { showLogScreen = true }
+        )
     }
 }
 
+// Define constants for common values
+private val ButtonColor = Color(0xFF4CAF50)
+private val BackgroundColor = Color.White
+private val GreenTextColor = Color(0xFF1B5E20)
+
 @Composable
 fun InitialScreen(onNavigateToMain: () -> Unit, onNavigateToLog: () -> Unit) {
-    val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(BackgroundColor)
             .padding(16.dp)
     ) {
         Column(
@@ -83,80 +76,81 @@ fun InitialScreen(onNavigateToMain: () -> Unit, onNavigateToLog: () -> Unit) {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Spacer(modifier = Modifier.weight(1f))
-
-                Button(
-                    onClick = onNavigateToMain,
-                    colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
-                    modifier = Modifier.padding(end = 8.dp)
-                ) {
-                    Text(
-                        text = "Skip",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
-
+            TopBar()
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Welcome to\nKeep Walking",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1B5E20), // Nuevo tono de verde
-                modifier = Modifier.padding(bottom = 32.dp),
-                textAlign = TextAlign.Center
-            )
-
-            Image(
-                painter = painterResource(id = R.drawable.personacaminando),
-                contentDescription = "Imagen de persona caminando",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp) // Reducir el tamaño de la imagen
-                    .padding(bottom = 32.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .width(200.dp) // Ajustar el ancho del contenedor
-            ) {
-                ButtonContainer(text = "Conectar\nBluetooth", color = buttonColor) {
-                    // TODO: Agregar la lógica de conexión Bluetooth
-                }
-            }
-
+            WelcomeText()
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = onNavigateToLog,
-                colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Registro de Tiempo de Estímulos",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
+            PersonImage()
+            Spacer(modifier = Modifier.height(32.dp))
+
+            ButtonContainer(
+                text = "Iniciar",
+                color = ButtonColor,
+                icon = Icons.Default.PlayArrow,
+                onClick = onNavigateToMain
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ButtonContainer(
+                text = "Conectar\nBluetooth",
+                color = ButtonColor,
+                icon = Icons.Default.Bluetooth,
+                onClick = { /* TODO: Add Bluetooth connection logic */ }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ButtonContainer(
+                text = "Registro de Tiempo de Estímulos",
+                color = ButtonColor,
+                icon = Icons.Default.List,
+                onClick = onNavigateToLog
+            )
         }
     }
 }
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigateToStimulus: () -> Unit) {
-    val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
-    val backgroundColor = Color(0xFFFFFFFF) // Color de fondo blanco
+fun TopBar() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(modifier = Modifier.weight(1f))
+    }
+}
 
-    var mode by remember { mutableStateOf(1) } // Estado para el modo actual
+@Composable
+fun WelcomeText() {
+    Text(
+        text = "Welcome to\nKeep Walking",
+        fontSize = 28.sp,
+        fontWeight = FontWeight.Bold,
+        color = GreenTextColor,
+        modifier = Modifier.padding(bottom = 32.dp),
+        textAlign = TextAlign.Center
+    )
+}
+
+@Composable
+fun PersonImage() {
+    Image(
+        painter = painterResource(id = R.drawable.personacaminando),
+        contentDescription = "Imagen de persona caminando",
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(bottom = 32.dp)
+    )
+}
+
+@Composable
+fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigateToStimulus: () -> Unit) {
+    val buttonColor = ButtonColor
+    val backgroundColor = BackgroundColor
+    var mode by remember { mutableStateOf(1) }
 
     Column(
         modifier = modifier
@@ -165,29 +159,14 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigat
             .padding(16.dp),
         verticalArrangement = Arrangement.Top
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Retroceder",
-                    tint = buttonColor
-                )
-            }
-        }
-
+        TopBarWithBackButton(onBackClick)
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = "Controlador de Estimulador Muscular",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1B5E20),
+            color = GreenTextColor,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
@@ -199,11 +178,10 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigat
             contentDescription = "Imagen de persona saludable",
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp) // Reducir la altura de la imagen
+                .height(200.dp)
                 .padding(bottom = 16.dp)
         )
 
-        // Button states
         var isOn by remember { mutableStateOf(false) }
 
         ButtonContainer(
@@ -212,7 +190,6 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigat
             icon = Icons.Default.PowerSettingsNew,
             onClick = { isOn = true }
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         ButtonContainer(
@@ -221,16 +198,22 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigat
             icon = Icons.Default.PowerSettingsNew,
             onClick = { isOn = false }
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         ButtonContainer(
             text = "Agregar Tiempo de Estimulo",
             color = buttonColor,
-            icon = Icons.Default.Settings,
+            icon = Icons.Default.Add,
             onClick = onNavigateToStimulus
         )
+        Spacer(modifier = Modifier.height(16.dp))
 
+        ButtonContainer(
+            text = "Seleccionar Pierna",
+            color = buttonColor,
+            icon = Icons.Default.DirectionsRun,
+            onClick = { /* TODO: Implement leg selection logic */ }
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(
@@ -242,7 +225,7 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigat
                 color = buttonColor,
                 icon = Icons.Default.Settings,
                 onClick = {
-                    mode = (mode % 8) + 1 // Cambiar al siguiente modo, volviendo a 1 después de 8
+                    mode = (mode % 8) + 1
                 }
             )
         }
@@ -250,11 +233,30 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigat
 }
 
 @Composable
+fun TopBarWithBackButton(onBackClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Retroceder",
+                tint = ButtonColor
+            )
+        }
+    }
+}
+
+@Composable
 fun StimulusScreen(onBackClick: () -> Unit) {
-    val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
+    val buttonColor = ButtonColor
     var isRunning by remember { mutableStateOf(false) }
     var elapsedTime by remember { mutableStateOf(0L) }
-    var mode by remember { mutableStateOf(1) } // Estado para el modo actual
+    var mode by remember { mutableStateOf(1) }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(isRunning) {
@@ -276,29 +278,14 @@ fun StimulusScreen(onBackClick: () -> Unit) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Retroceder",
-                    tint = buttonColor
-                )
-            }
-        }
-
+        TopBarWithBackButton(onBackClick)
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = "Tiempo de Estimulo",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1B5E20),
+            color = GreenTextColor,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
@@ -310,7 +297,7 @@ fun StimulusScreen(onBackClick: () -> Unit) {
             contentDescription = "Imagen de cronómetro",
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp) // Reducir la altura de la imagen
+                .height(200.dp)
                 .padding(bottom = 16.dp)
         )
 
@@ -326,26 +313,25 @@ fun StimulusScreen(onBackClick: () -> Unit) {
                 textAlign = TextAlign.Center
             )
         }
-
         Spacer(modifier = Modifier.height(16.dp))
 
         ButtonContainer(
             text = if (isRunning) "Pausar" else "Iniciar",
             color = buttonColor,
+            icon = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
             onClick = { isRunning = !isRunning }
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         ButtonContainer(
             text = "Reiniciar",
             color = buttonColor,
+            icon = Icons.Default.Refresh,
             onClick = {
                 isRunning = false
                 elapsedTime = 0L
             }
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(
@@ -357,7 +343,7 @@ fun StimulusScreen(onBackClick: () -> Unit) {
                 color = buttonColor,
                 icon = Icons.Default.Settings,
                 onClick = {
-                    mode = (mode % 8) + 1 // Cambiar al siguiente modo, volviendo a 1 después de 8
+                    mode = (mode % 8) + 1
                 }
             )
         }
@@ -366,7 +352,7 @@ fun StimulusScreen(onBackClick: () -> Unit) {
 
 @Composable
 fun LogScreen(onBackClick: () -> Unit) {
-    val buttonColor = Color(0xFF4CAF50) // Color verde para los botones
+    val buttonColor = ButtonColor
 
     Column(
         modifier = Modifier
@@ -376,29 +362,14 @@ fun LogScreen(onBackClick: () -> Unit) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Retroceder",
-                    tint = buttonColor
-                )
-            }
-        }
-
+        TopBarWithBackButton(onBackClick)
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = "Registro de Tiempo de Estímulos",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1B5E20),
+            color = GreenTextColor,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
@@ -410,7 +381,7 @@ fun LogScreen(onBackClick: () -> Unit) {
             contentDescription = "Imagen de registro",
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp) // Reducir la altura de la imagen
+                .height(200.dp)
                 .padding(bottom = 16.dp)
         )
 
