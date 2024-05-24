@@ -62,6 +62,10 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.1.0")
     implementation("androidx.compose.foundation:foundation:1.3.1")
     implementation("androidx.compose.runtime:runtime:1.3.1")
+    implementation("androidx.activity:activity-compose:1.3.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
+    implementation("androidx.navigation:navigation-compose:2.4.0-alpha10")
+    implementation("com.google.accompanist:accompanist-permissions:0.20.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -70,5 +74,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
 
 

@@ -19,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appv1.ui.theme.AppV1Theme
@@ -50,15 +51,28 @@ fun MyApp() {
     var logs by remember { mutableStateOf(listOf<StimulusLog>()) }
 
     when {
-        showLogScreen -> LogScreen(logs, onBackClick = { showLogScreen = false })
-        showStimulusScreen -> StimulusScreen(onBackClick = { showStimulusScreen = false }) { log ->
+        showLogScreen -> LogScreen(
+            logs,
+            onBackClick = { showLogScreen = false },
+            onAddStimulusClick = {
+                showLogScreen = false
+                showStimulusScreen = true
+            }
+        )
+        showStimulusScreen -> StimulusScreen(
+            onBackClick = {
+                showStimulusScreen = false
+                showLogScreen = true
+            }
+        ) { log ->
             logs = logs + log
             showStimulusScreen = false
             showLogScreen = true
         }
         showMainScreen -> MainScreen(
             onBackClick = { showMainScreen = false },
-            onNavigateToStimulus = { showStimulusScreen = true }
+            onNavigateToStimulus = { showStimulusScreen = true },
+            onNavigateToLog = { showLogScreen = true }
         )
         else -> InitialScreen(
             onNavigateToMain = { showMainScreen = true },
@@ -98,7 +112,8 @@ fun InitialScreen(onNavigateToMain: () -> Unit, onNavigateToLog: () -> Unit) {
                 text = "Iniciar",
                 color = ButtonColor,
                 icon = Icons.Default.PlayArrow,
-                onClick = onNavigateToMain
+                onClick = onNavigateToMain,
+                height = 56.dp // Slightly larger height
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -106,7 +121,8 @@ fun InitialScreen(onNavigateToMain: () -> Unit, onNavigateToLog: () -> Unit) {
                 text = "Conectar\nBluetooth",
                 color = ButtonColor,
                 icon = Icons.Default.Bluetooth,
-                onClick = { /* TODO: Add Bluetooth connection logic */ }
+                onClick = { /* TODO: Add Bluetooth connection logic */ },
+                height = 56.dp // Slightly larger height
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -114,7 +130,8 @@ fun InitialScreen(onNavigateToMain: () -> Unit, onNavigateToLog: () -> Unit) {
                 text = "Registro de\nTiempo",
                 color = ButtonColor,
                 icon = Icons.Default.List,
-                onClick = onNavigateToLog
+                onClick = onNavigateToLog,
+                height = 56.dp // Slightly larger height
             )
         }
     }
@@ -159,7 +176,7 @@ fun PersonImage(imageRes: Int) {
 }
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigateToStimulus: () -> Unit) {
+fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigateToStimulus: () -> Unit, onNavigateToLog: () -> Unit) {
     val buttonColor = ButtonColor
     val backgroundColor = BackgroundColor
     var mode by remember { mutableStateOf(1) }
@@ -176,7 +193,7 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigat
             onClick = onBackClick,
             modifier = Modifier
                 .padding(8.dp)
-                .size(32.dp) // Reduced size
+                .size(24.dp) // Reduced size
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
@@ -211,14 +228,6 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigat
         Spacer(modifier = Modifier.height(16.dp))
 
         ButtonContainer(
-            text = "Agregar Tiempo de Estimulo",
-            color = buttonColor,
-            icon = Icons.Default.Add,
-            onClick = onNavigateToStimulus
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ButtonContainer(
             text = "Seleccionar Pierna: ${selectedLeg?.toString() ?: "Ninguna"}",
             color = buttonColor,
             icon = Icons.Default.DirectionsRun,
@@ -239,6 +248,15 @@ fun MainScreen(modifier: Modifier = Modifier, onBackClick: () -> Unit, onNavigat
                 }
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ButtonContainer(
+            text = "Registro de Tiempo",
+            color = buttonColor,
+            icon = Icons.Default.List,
+            onClick = onNavigateToLog
+        )
     }
 }
 
@@ -314,7 +332,7 @@ fun StimulusScreen(onBackClick: () -> Unit, onSaveLog: (StimulusLog) -> Unit) {
             onClick = onBackClick,
             modifier = Modifier
                 .padding(8.dp)
-                .size(32.dp) // Reduced size
+                .size(24.dp) // Reduced size
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
@@ -325,7 +343,7 @@ fun StimulusScreen(onBackClick: () -> Unit, onSaveLog: (StimulusLog) -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TopBar(title = "Registro de Tiempo de Estímulo")
+        TopBar(title = "Agregar Tiempo de Estímulo")
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -396,7 +414,7 @@ fun StimulusScreen(onBackClick: () -> Unit, onSaveLog: (StimulusLog) -> Unit) {
 }
 
 @Composable
-fun LogScreen(logs: List<StimulusLog>, onBackClick: () -> Unit) {
+fun LogScreen(logs: List<StimulusLog>, onBackClick: () -> Unit, onAddStimulusClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -404,17 +422,35 @@ fun LogScreen(logs: List<StimulusLog>, onBackClick: () -> Unit) {
             .padding(16.dp),
         verticalArrangement = Arrangement.Top
     ) {
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier
-                .padding(8.dp)
-                .size(32.dp) // Reduced size
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Retroceder",
-                tint = Color.Black
-            )
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .size(24.dp) // Reduced size
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Retroceder",
+                    tint = Color.Black
+                )
+            }
+            IconButton(
+                onClick = onAddStimulusClick,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .size(24.dp) // Reduced size
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Agregar Tiempo de Estímulo",
+                    tint = Color.Black
+                )
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -457,18 +493,18 @@ fun StimulusLogItem(log: StimulusLog) {
 }
 
 @Composable
-fun ButtonContainer(text: String, color: Color, icon: ImageVector, onClick: () -> Unit) {
+fun ButtonContainer(text: String, color: Color, icon: ImageVector, onClick: () -> Unit, height: Dp = 48.dp) {
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(color),
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(height) // Adjustable height
             .padding(horizontal = 8.dp)
     ) {
-        Icon(icon, contentDescription = text, modifier = Modifier.size(24.dp))
+        Icon(icon, contentDescription = text, modifier = Modifier.size(20.dp)) // Reduced icon size
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = text, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(text = text, fontSize = 14.sp, fontWeight = FontWeight.Bold) // Reduced text size
     }
 }
 
