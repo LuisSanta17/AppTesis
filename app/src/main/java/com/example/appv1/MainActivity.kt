@@ -25,6 +25,8 @@ import com.example.appv1.ui.theme.AppV1Theme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+data class StimulusLog(val time: String, val mode: Int, val name: String)
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,10 +43,15 @@ fun MyApp() {
     var showMainScreen by remember { mutableStateOf(false) }
     var showStimulusScreen by remember { mutableStateOf(false) }
     var showLogScreen by remember { mutableStateOf(false) }
+    var logs by remember { mutableStateOf(listOf<StimulusLog>()) }
 
     when {
-        showLogScreen -> LogScreen(onBackClick = { showLogScreen = false })
-        showStimulusScreen -> StimulusScreen(onBackClick = { showStimulusScreen = false })
+        showLogScreen -> LogScreen(logs, onBackClick = { showLogScreen = false })
+        showStimulusScreen -> StimulusScreen(onBackClick = { showStimulusScreen = false }) { log ->
+            logs = logs + log
+            showStimulusScreen = false
+            showLogScreen = true
+        }
         showMainScreen -> MainScreen(
             onBackClick = { showMainScreen = false },
             onNavigateToStimulus = { showStimulusScreen = true }
@@ -60,6 +67,7 @@ fun MyApp() {
 private val ButtonColor = Color(0xFF4CAF50)
 private val BackgroundColor = Color.White
 private val GreenTextColor = Color(0xFF1B5E20)
+private val ContainerColor = Color(0xFFE8F5E9)
 
 @Composable
 fun InitialScreen(onNavigateToMain: () -> Unit, onNavigateToLog: () -> Unit) {
@@ -102,7 +110,7 @@ fun InitialScreen(onNavigateToMain: () -> Unit, onNavigateToLog: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
 
             ButtonContainer(
-                text = "Registro de Tiempo de Estímulos",
+                text = "Registro de\nTiempo de\nEstímulos",
                 color = ButtonColor,
                 icon = Icons.Default.List,
                 onClick = onNavigateToLog
@@ -252,12 +260,14 @@ fun TopBarWithBackButton(onBackClick: () -> Unit) {
 }
 
 @Composable
-fun StimulusScreen(onBackClick: () -> Unit) {
+fun StimulusScreen(onBackClick: () -> Unit, onSaveLog: (StimulusLog) -> Unit) {
     val buttonColor = ButtonColor
     var isRunning by remember { mutableStateOf(false) }
     var elapsedTime by remember { mutableStateOf(0L) }
     var mode by remember { mutableStateOf(1) }
     val scope = rememberCoroutineScope()
+    var showNameInputDialog by remember { mutableStateOf(false) }
+    var logName by remember { mutableStateOf("") }
 
     LaunchedEffect(isRunning) {
         while (isRunning) {
@@ -269,6 +279,48 @@ fun StimulusScreen(onBackClick: () -> Unit) {
     val minutes = (elapsedTime / 60000) % 60
     val seconds = (elapsedTime / 1000) % 60
     val milliseconds = (elapsedTime / 10) % 100
+
+    if (showNameInputDialog) {
+        AlertDialog(
+            onDismissRequest = { showNameInputDialog = false },
+            title = { Text("Guardar Registro") },
+            text = {
+                Column {
+                    Text("Ingrese el nombre del registro:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = logName,
+                        onValueChange = { logName = it },
+                        label = { Text("Nombre del registro") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val log = StimulusLog(
+                            time = String.format("%02d:%02d.%02d", minutes, seconds, milliseconds),
+                            mode = mode,
+                            name = logName
+                        )
+                        onSaveLog(log)
+                        showNameInputDialog = false
+                        logName = ""
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showNameInputDialog = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -282,7 +334,7 @@ fun StimulusScreen(onBackClick: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Tiempo de Estimulo",
+            text = "Tiempo de Estímulo",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = GreenTextColor,
@@ -302,6 +354,7 @@ fun StimulusScreen(onBackClick: () -> Unit) {
         )
 
         Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
                 .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp))
                 .padding(16.dp)
@@ -347,11 +400,21 @@ fun StimulusScreen(onBackClick: () -> Unit) {
                 }
             )
         }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ButtonContainer(
+            text = "Guardar Tiempo",
+            color = buttonColor,
+            icon = Icons.Default.Save,
+            onClick = {
+                showNameInputDialog = true
+            }
+        )
     }
 }
 
 @Composable
-fun LogScreen(onBackClick: () -> Unit) {
+fun LogScreen(logs: List<StimulusLog>, onBackClick: () -> Unit) {
     val buttonColor = ButtonColor
 
     Column(
@@ -385,7 +448,37 @@ fun LogScreen(onBackClick: () -> Unit) {
                 .padding(bottom = 16.dp)
         )
 
-        // Aquí podrías agregar una lista de registros si tuvieras una
+        // Lista de registros con diseño mejorado
+        logs.forEach { log ->
+            Card(
+                shape = RoundedCornerShape(8.dp),
+
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Nombre: ${log.name}",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = GreenTextColor
+                    )
+                    Text(
+                        text = "Tiempo: ${log.time}",
+                        fontSize = 16.sp,
+                        color = GreenTextColor
+                    )
+                    Text(
+                        text = "Modo: ${log.mode}",
+                        fontSize = 16.sp,
+                        color = GreenTextColor
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -439,7 +532,7 @@ fun MainScreenPreview() {
 @Composable
 fun StimulusScreenPreview() {
     AppV1Theme {
-        StimulusScreen(onBackClick = {})
+        StimulusScreen(onBackClick = {}, onSaveLog = {})
     }
 }
 
@@ -447,6 +540,6 @@ fun StimulusScreenPreview() {
 @Composable
 fun LogScreenPreview() {
     AppV1Theme {
-        LogScreen(onBackClick = {})
+        LogScreen(logs = listOf(), onBackClick = {})
     }
 }
